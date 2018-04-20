@@ -7,6 +7,8 @@
 #include "matrix.h"
 #include "math.h"
 #include "gmath.h"
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MIN3(a, b, c) (MIN(MIN(a, b), c))
 
 /*======== void scanline_convert() ==========
   Inputs: struct matrix *points
@@ -20,7 +22,11 @@
   Color should be set differently for each polygon.
   ====================*/
 void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
-
+  double y0 = points->m[i][1];
+  double y1 = points->m[i+1][1];
+  double y2 = points->m[i+2][1];
+  double yb = MIN3(y0, y1, y2);
+  
 }
 
 /*======== void add_polygon() ==========

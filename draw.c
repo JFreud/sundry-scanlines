@@ -128,7 +128,7 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
     }
   }
   x_left = xm;
-  
+
   //from midpoint to top
   if (fabs(yt - ym) > 0.00001) {
     for(y = ym; y < yt; y++) {
@@ -142,8 +142,6 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
       x_right += delta_xb_xt;
     }
   }
-
-
 
 }
 

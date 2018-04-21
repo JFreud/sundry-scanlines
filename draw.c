@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "ml6.h"
 #include "display.h"
@@ -7,6 +8,11 @@
 #include "matrix.h"
 #include "math.h"
 #include "gmath.h"
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MIN3(a, b, c) (MIN(MIN(a, b), c))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MAX3(a, b, c) (MAX(MAX(a, b), c))
+#define MID(a, b, c) (MAX(MIN(MAX(a, b), c), MIN(a, b)))
 
 /*======== void scanline_convert() ==========
   Inputs: struct matrix *points
@@ -20,6 +26,124 @@
   Color should be set differently for each polygon.
   ====================*/
 void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
+  double x0, y0, z0,x1, y1, z1, x2, y2, z2;
+  double xb, yb, xm, ym, xt, yt;
+  double delta_xb_xm; //delta x from xb to xm
+  double delta_xm_xt;
+  double delta_xb_xt;
+  double x_left, x_right, y; //not necessarily the real right and left
+
+  color c;
+  srand(time(NULL));
+  c.red = rand() % 255;
+  c.green = rand() % 255;
+  c.blue = rand() % 255;
+
+  // x0 = points->m[i][0];
+  // x1 = points->m[i+1][0];
+  // x2 = points->m[i+2][0];
+  // y0 = points->m[i][1];
+  // y1 = points->m[i+1][1];
+  // y2 = points->m[i+2][1];
+  // z0 = points->m[i][2];
+  // z1 = points->m[i+1][2];
+  // z2 = points->m[i+2][2];
+  x0 = points->m[0][i];
+  x1 = points->m[0][i+1];
+  x2 = points->m[0][i+2];
+  y0 = points->m[1][i];
+  y1 = points->m[1][i+1];
+  y2 = points->m[1][i+2];
+  z0 = points->m[2][i];
+  z1 = points->m[2][i+1];
+  z2 = points->m[2][i+2];
+
+
+  yb = MIN3(y0, y1, y2);
+  yt = MAX3(y0, y1, y1);
+  ym = MID(y0, y1, y2);
+
+  //this is stupid and I should just swap the values around lol
+  if (fabs(yb - y0) < 0.00001) {
+    xb = x0;
+  }
+  else if (fabs(ym - y0) < 0.00001) {
+    xm = x0;
+  }
+  else {
+    xt = x0;
+  }
+
+  if (fabs(yb - y1) < 0.00001) {
+    xb = x1;
+  }
+  else if (fabs(ym - y1) < 0.00001) {
+    xm = x1;
+  }
+  else {
+    xt = x1;
+  }
+
+  if (fabs(yb - y2) < 0.00001) {
+    xb = x2;
+  }
+  else if (fabs(ym - y2) < 0.00001) {
+    xm = x2;
+  }
+  else {
+    xt = x2;
+  }
+
+  // printf("xb, yb, xm, ym, xt, yt: %lf %lf %lf %lf %lf %lf\n", xb, yb, xm, ym, xt, yt);
+  // printf("x0, y0, x1, y1, x2, y2: %lf %lf %lf %lf %lf %lf\n", x0, y0, x1, y1, x2, y2);
+
+  delta_xb_xt = (xt - xb) / (yt - yb);
+  if (fabs(ym - yb) > 0.00001) {
+    delta_xb_xm = (xm - xb) / (ym - yb);
+  }
+  if (fabs(yt - ym) > 0.00001) {
+    delta_xm_xt = (xt - xm) / (yt - ym);
+  }
+
+  // printf("delta_xm_xt: %lf\n", delta_xm_xt);
+  // printf("delta_xb_xt: %lf\n", delta_xb_xt);
+
+  x_left = xb;
+  x_right = xb;
+  //from bottom to midpoint
+  srand(x_left);
+  c.red = rand() % 255;
+  c.green = rand() % 255;
+  c.blue = rand() % 255;
+  if (fabs(yb - ym) > 0.00001) {
+    for (y = yb; y < ym; y++) {
+      draw_line(x_left, y, 0, x_right, y, 0, s, zb, c);
+      printf("yb to ym\n");
+      printf("xleft: %lf\n", x_left);
+      printf("xright: %lf\n", x_right);
+      // printf("delta_xb_xm: %lf\n", delta_xb_xm);
+      // printf("delta_xb_xt: %lf\n", delta_xb_xt);
+      x_left += delta_xb_xm;
+      x_right += delta_xb_xt;
+    }
+  }
+  x_left = xm;
+  
+  //from midpoint to top
+  if (fabs(yt - ym) > 0.00001) {
+    for(y = ym; y < yt; y++) {
+      printf("ym to yt\n");
+      printf("xleft: %lf\n", x_left);
+      printf("xright: %lf\n", x_right);
+      // printf("delta_xm_xt: %lf\n", delta_xm_xt);
+      // printf("delta_xb_xt: %lf\n", delta_xb_xt);
+      draw_line(x_left, y, 0, x_right, y, 0, s, zb, c);
+      x_left += delta_xm_xt;
+      x_right += delta_xb_xt;
+    }
+  }
+
+
 
 }
 
@@ -72,7 +196,7 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb, color c ) {
     normal = calculate_normal(polygons, point);
 
     if ( normal[2] > 0 ) {
-
+      scanline_convert(polygons, point, s, zb);
       draw_line( polygons->m[0][point],
                  polygons->m[1][point],
                  polygons->m[2][point],

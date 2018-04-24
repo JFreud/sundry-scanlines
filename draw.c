@@ -135,7 +135,7 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
   c.blue = rand() % 255;
   if (fabs(yb - ym) > 0.00001) {
     for (y = yb; y < ym; y++) {
-      draw_line(x_left, y, 0, x_right, y, 0, s, zb, c);
+      draw_line(x_left, y, z_left, x_right, y, z_right, s, zb, c);
       // printf("yb to ym\n");
       // printf("xleft: %lf\n", x_left);
       // printf("xright: %lf\n", x_right);
@@ -158,7 +158,7 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
       // printf("xright: %lf\n", x_right);
       // printf("delta_xm_xt: %lf\n", delta_xm_xt);
       // printf("delta_xb_xt: %lf\n", delta_xb_xt);
-      draw_line(x_left, y, 0, x_right, y, 0, s, zb, c);
+      draw_line(x_left, y, z_left, x_right, y, z_right, s, zb, c);
       x_left += delta_xm_xt;
       x_right += delta_xb_xt;
       z_left += delta_zm_zt;

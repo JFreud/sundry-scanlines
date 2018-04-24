@@ -14,6 +14,31 @@
 #define MAX3(a, b, c) (MAX(MAX(a, b), c))
 #define MID(a, b, c) (MAX(MIN(MAX(a, b), c), MIN(a, b)))
 
+
+
+int d_comp(double a, double b) {
+  if (fabs(a - b) < 0.00001) {
+    return 1;
+  }
+  else {
+    return 0;
+  }
+}
+
+void swap(double *x0, double *y0, double *z0, double *x1, double *y1, double *z1) {
+  double tmpx,tmpy,tmpz;
+  tmpx = *x0;
+  tmpy = *y0;
+  tmpz = *z0;
+  *x0 = *x1;
+  *y0 = *y1;
+  *z0 = *z1;
+  *x1 = tmpx;
+  *y1 = tmpy;
+  *z1 = tmpz;
+}
+
+
 /*======== void scanline_convert() ==========
   Inputs: struct matrix *points
           int i
@@ -27,27 +52,19 @@
   ====================*/
 void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
   double x0, y0, z0,x1, y1, z1, x2, y2, z2;
-  double xb, yb, xm, ym, xt, yt;
+  double xb, yb, zbot, xm, ym, zm, xt, yt, zt;
   double delta_xb_xm; //delta x from xb to xm
   double delta_xm_xt;
   double delta_xb_xt;
-  double x_left, x_right, y; //not necessarily the real right and left
+  double delta_zb_zm, delta_zm_zt, delta_zb_zt;
+  double x_left, x_right, z_left, z_right, y; //not necessarily the real right and left
 
   color c;
   srand(time(NULL));
   c.red = rand() % 255;
-  c.green = rand() % 255;
+  // c.green = rand() % 255;
   c.blue = rand() % 255;
 
-  // x0 = points->m[i][0];
-  // x1 = points->m[i+1][0];
-  // x2 = points->m[i+2][0];
-  // y0 = points->m[i][1];
-  // y1 = points->m[i+1][1];
-  // y2 = points->m[i+2][1];
-  // z0 = points->m[i][2];
-  // z1 = points->m[i+1][2];
-  // z2 = points->m[i+2][2];
   x0 = points->m[0][i];
   x1 = points->m[0][i+1];
   x2 = points->m[0][i+2];
@@ -59,43 +76,31 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
   z2 = points->m[2][i+2];
 
 
-  yb = MIN3(y0, y1, y2);
-  yt = MAX3(y0, y1, y1);
-  ym = MID(y0, y1, y2);
+  // yb = MIN3(y0, y1, y2);
+  // yt = MAX3(y0, y1, y1);
+  // ym = MID(y0, y1, y2);
 
-  //this is stupid and I should just swap the values around lol
-  if (fabs(yb - y0) < 0.00001) {
-    xb = x0;
+  if (y0 > y1) {
+    swap(&x0, &y0, &z0, &x1, &y1, &z1);
   }
-  else if (fabs(ym - y0) < 0.00001) {
-    xm = x0;
+  if (y1 > y2) {
+    swap(&x1, &y1, &z1, &x2, &y2, &z2);
   }
-  else {
-    xt = x0;
+  if (y0 > y1) {
+    swap(&x0, &y0, &z0, &x1, &y1, &z1);
   }
+  xb = x0;
+  xm = x1;
+  xt = x2;
+  yb = y0;
+  ym = y1;
+  yt = y2;
+  zbot = z0;
+  zm = z1;
+  zt = z2;
 
-  if (fabs(yb - y1) < 0.00001) {
-    xb = x1;
-  }
-  else if (fabs(ym - y1) < 0.00001) {
-    xm = x1;
-  }
-  else {
-    xt = x1;
-  }
-
-  if (fabs(yb - y2) < 0.00001) {
-    xb = x2;
-  }
-  else if (fabs(ym - y2) < 0.00001) {
-    xm = x2;
-  }
-  else {
-    xt = x2;
-  }
-
-  // printf("xb, yb, xm, ym, xt, yt: %lf %lf %lf %lf %lf %lf\n", xb, yb, xm, ym, xt, yt);
-  // printf("x0, y0, x1, y1, x2, y2: %lf %lf %lf %lf %lf %lf\n", x0, y0, x1, y1, x2, y2);
+  printf("xb, yb, xm, ym, xt, yt: %lf %lf %lf %lf %lf %lf\n", xb, yb, xm, ym, xt, yt);
+  printf("x0, y0, x1, y1, x2, y2: %lf %lf %lf %lf %lf %lf\n", x0, y0, x1, y1, x2, y2);
 
   delta_xb_xt = (xt - xb) / (yt - yb);
   if (fabs(ym - yb) > 0.00001) {
@@ -105,41 +110,59 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
     delta_xm_xt = (xt - xm) / (yt - ym);
   }
 
+  delta_zb_zt = (zt - zbot) / (yt - yb);
+  if (fabs(ym - yb) > 0.00001) {
+    delta_zb_zm = (zm - zbot) / (ym - yb);
+  }
+  if (fabs(yt - ym) > 0.00001) {
+    delta_zm_zt = (zt - zm) / (yt - ym);
+  }
+
+
+
+
   // printf("delta_xm_xt: %lf\n", delta_xm_xt);
   // printf("delta_xb_xt: %lf\n", delta_xb_xt);
 
   x_left = xb;
   x_right = xb;
+  z_left = zbot;
+  z_right = zbot;
   //from bottom to midpoint
   srand(x_left);
   c.red = rand() % 255;
-  c.green = rand() % 255;
+  // c.green = rand() % 255;
   c.blue = rand() % 255;
   if (fabs(yb - ym) > 0.00001) {
     for (y = yb; y < ym; y++) {
       draw_line(x_left, y, 0, x_right, y, 0, s, zb, c);
-      printf("yb to ym\n");
-      printf("xleft: %lf\n", x_left);
-      printf("xright: %lf\n", x_right);
+      // printf("yb to ym\n");
+      // printf("xleft: %lf\n", x_left);
+      // printf("xright: %lf\n", x_right);
       // printf("delta_xb_xm: %lf\n", delta_xb_xm);
       // printf("delta_xb_xt: %lf\n", delta_xb_xt);
       x_left += delta_xb_xm;
       x_right += delta_xb_xt;
+      z_left += delta_zb_zm;
+      z_right += delta_zb_zt;
     }
   }
   x_left = xm;
+  printf("xleft: %lf\n", x_left);
 
   //from midpoint to top
   if (fabs(yt - ym) > 0.00001) {
     for(y = ym; y < yt; y++) {
-      printf("ym to yt\n");
-      printf("xleft: %lf\n", x_left);
-      printf("xright: %lf\n", x_right);
+      // printf("ym to yt\n");
+      // printf("xleft: %lf\n", x_left);
+      // printf("xright: %lf\n", x_right);
       // printf("delta_xm_xt: %lf\n", delta_xm_xt);
       // printf("delta_xb_xt: %lf\n", delta_xb_xt);
       draw_line(x_left, y, 0, x_right, y, 0, s, zb, c);
       x_left += delta_xm_xt;
       x_right += delta_xb_xt;
+      z_left += delta_zm_zt;
+      z_right += delta_zb_zt;
     }
   }
 

@@ -31,8 +31,16 @@ pixel 0, 0 located at the lower left corner of the screen
 ====================*/
 void plot(screen s, zbuffer zb, color c, int x, int y, double z) {
   int newy = YRES - 1 - y;
-  if ( x >= 0 && x < XRES && newy >=0 && newy < YRES )
+  if ( x >= 0 && x < XRES && newy >=0 && newy < YRES && z > zb[x][newy]){
+    // printf("z = %lf\n", z);
+    // printf("zb[x][newy] = %lf\n", zb[x][newy]);
+    // printf("hadw\n");
+    // printf("old z = %lf\n", zb[x][newy]);
+    zb[x][newy] = z;
+    // printf("new z = %lf\n", zb[x][newy]);
+    // printf("zb[x][newy] = %lf\n", zb[x][newy]);
     s[x][newy] = c;
+  }
 }
 
 /*======== void clear_screen() ==========

@@ -60,10 +60,13 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
   double x_left, x_right, z_left, z_right, y; //not necessarily the real right and left
 
   color c;
-  srand(time(NULL));
-  c.red = rand() % 255;
-  // c.green = rand() % 255;
-  c.blue = rand() % 255;
+  // srand(time(NULL));
+  // c.red = 100 + i * 10 + rand() % 255;
+  // c.green = i * 10 + rand() % 255;
+  // c.blue = 100 + i * 10 + rand() % 255;
+  c.red = (100 + i * 10) % 255;
+  c.green = (i * 10) % 255;
+  c.blue = (100 + i * 10) % 255;
 
   x0 = points->m[0][i];
   x1 = points->m[0][i+1];
@@ -99,8 +102,8 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
   zm = z1;
   zt = z2;
 
-  printf("xb, yb, xm, ym, xt, yt: %lf %lf %lf %lf %lf %lf\n", xb, yb, xm, ym, xt, yt);
-  printf("x0, y0, x1, y1, x2, y2: %lf %lf %lf %lf %lf %lf\n", x0, y0, x1, y1, x2, y2);
+  // printf("xb, yb, xm, ym, xt, yt: %lf %lf %lf %lf %lf %lf\n", xb, yb, xm, ym, xt, yt);
+  // printf("x0, y0, x1, y1, x2, y2: %lf %lf %lf %lf %lf %lf\n", x0, y0, x1, y1, x2, y2);
 
   delta_xb_xt = (xt - xb) / (yt - yb);
   if (fabs(ym - yb) > 0.00001) {
@@ -129,12 +132,14 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
   z_left = zbot;
   z_right = zbot;
   //from bottom to midpoint
-  srand(x_left);
-  c.red = rand() % 255;
+  // srand(x_left);
+  // c.red = rand() % 255;
   // c.green = rand() % 255;
-  c.blue = rand() % 255;
+  // c.blue = rand() % 255;
   if (fabs(yb - ym) > 0.00001) {
     for (y = yb; y < ym; y++) {
+      // printf("top: zleft: %lf\tzright: %lf\n", z_left, z_right);
+      // printf("adw\n");
       draw_line(x_left, y, z_left, x_right, y, z_right, s, zb, c);
       // printf("yb to ym\n");
       // printf("xleft: %lf\n", x_left);
@@ -145,10 +150,14 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
       x_right += delta_xb_xt;
       z_left += delta_zb_zm;
       z_right += delta_zb_zt;
+      // z_left += delta_zb_zt;
+      // z_right += delta_zb_zm;
+      // printf("top: zleft: %lf\tzright: %lf\n", z_left, z_right);
     }
   }
   x_left = xm;
-  printf("xleft: %lf\n", x_left);
+  z_left = zm;
+  // printf("xleft: %lf\n", x_left);
 
   //from midpoint to top
   if (fabs(yt - ym) > 0.00001) {
@@ -158,11 +167,15 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb ) {
       // printf("xright: %lf\n", x_right);
       // printf("delta_xm_xt: %lf\n", delta_xm_xt);
       // printf("delta_xb_xt: %lf\n", delta_xb_xt);
+      // printf("bot: zleft: %lf\tzright: %lf\n", z_left, z_right);
       draw_line(x_left, y, z_left, x_right, y, z_right, s, zb, c);
       x_left += delta_xm_xt;
       x_right += delta_xb_xt;
       z_left += delta_zm_zt;
       z_right += delta_zb_zt;
+      // z_left += delta_zb_zt;
+      // z_right += delta_zb_zm;
+      // printf("top: zleft: %lf\tzright: %lf\n", z_left, z_right);
     }
   }
 
@@ -218,27 +231,27 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb, color c ) {
 
     if ( normal[2] > 0 ) {
       scanline_convert(polygons, point, s, zb);
-      draw_line( polygons->m[0][point],
-                 polygons->m[1][point],
-                 polygons->m[2][point],
-                 polygons->m[0][point+1],
-                 polygons->m[1][point+1],
-                 polygons->m[2][point+1],
-                 s, zb, c);
-      draw_line( polygons->m[0][point+2],
-                 polygons->m[1][point+2],
-                 polygons->m[2][point+2],
-                 polygons->m[0][point+1],
-                 polygons->m[1][point+1],
-                 polygons->m[2][point+1],
-                 s, zb, c);
-      draw_line( polygons->m[0][point],
-                 polygons->m[1][point],
-                 polygons->m[2][point],
-                 polygons->m[0][point+2],
-                 polygons->m[1][point+2],
-                 polygons->m[2][point+2],
-                 s, zb, c);
+      // draw_line( polygons->m[0][point],
+      //            polygons->m[1][point],
+      //            polygons->m[2][point],
+      //            polygons->m[0][point+1],
+      //            polygons->m[1][point+1],
+      //            polygons->m[2][point+1],
+      //            s, zb, c);
+      // draw_line( polygons->m[0][point+2],
+      //            polygons->m[1][point+2],
+      //            polygons->m[2][point+2],
+      //            polygons->m[0][point+1],
+      //            polygons->m[1][point+1],
+      //            polygons->m[2][point+1],
+      //            s, zb, c);
+      // draw_line( polygons->m[0][point],
+      //            polygons->m[1][point],
+      //            polygons->m[2][point],
+      //            polygons->m[0][point+2],
+      //            polygons->m[1][point+2],
+      //            polygons->m[2][point+2],
+      //            s, zb, c);
     }
   }
 }
@@ -661,21 +674,26 @@ void draw_line(int x0, int y0, double z0,
   int x, y, d, A, B;
   int dy_east, dy_northeast, dx_east, dx_northeast, d_east, d_northeast;
   int loop_start, loop_end;
-
+  double z;
+  double delta_z;
   //swap points if going right -> left
   int xt, yt;
+  double zt;
   if (x0 > x1) {
     xt = x0;
     yt = y0;
+    zt = z0;
     x0 = x1;
     y0 = y1;
     z0 = z1;
     x1 = xt;
     y1 = yt;
+    z1 = zt;
   }
 
   x = x0;
   y = y0;
+  z = z0;
   A = 2 * (y1 - y0);
   B = -2 * (x1 - x0);
   int wide = 0;
@@ -721,9 +739,11 @@ void draw_line(int x0, int y0, double z0,
     }
   }
 
+  delta_z = (z1 - z0)/(loop_end - loop_start);
+
   while ( loop_start < loop_end ) {
 
-    plot( s, zb, c, x, y, 0);
+    plot( s, zb, c, x, y, z);
     if ( (wide && ((A > 0 && d > 0) ||
                    (A < 0 && d < 0)))
          ||
@@ -738,7 +758,8 @@ void draw_line(int x0, int y0, double z0,
       y+= dy_east;
       d+= d_east;
     }
+    z += delta_z;
     loop_start++;
   } //end drawing loop
-  plot( s, zb, c, x1, y1, 0 );
+  plot( s, zb, c, x1, y1, z1);
 } //end draw_line
